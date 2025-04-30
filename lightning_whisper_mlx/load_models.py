@@ -25,8 +25,11 @@ def load_model(
         quantization = config.pop("quantization", None)
 
     model_args = whisper.ModelDimensions(**config)
-
-    weights = mx.load(str(model_path / "weights.npz"))
+    if "whisper-large-v3" in str(path_or_hf_repo):
+        weights = mx.load(str(model_path / "weights.safetensors"))
+    else:
+        weights = mx.load(str(model_path / "weights.npz"))
+    
     weights = tree_unflatten(list(weights.items()))
 
     model = whisper.Whisper(model_args, dtype)

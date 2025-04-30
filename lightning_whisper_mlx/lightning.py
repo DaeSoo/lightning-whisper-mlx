@@ -71,24 +71,28 @@ class LightningWhisperMLX():
             repo_id = models[model][quant]
         else:
             repo_id = models[model]['base']
-        
-        if quant and "distil" in model: 
-            if quant == "4bit": 
-                self.name += "-4-bit" 
-            else:
-                self.name += "-8-bit"
-
-        if "distil" in model:
-            filename1 = f"./mlx_models/{self.name}/weights.npz"
-            filename2 = f"./mlx_models/{self.name}/config.json"
-            local_dir = "./"
-        else:
-            filename1 = "weights.npz"
-            filename2 = "config.json"
+            
+        if "whisper-large-v3-turbo" in model:
+            filename_turbo = "weights.safetensors"
             local_dir = f"./mlx_models/{self.name}"
+            hf_hub_download(repo_id=repo_id, filename=filename_turbo, local_dir=local_dir)
+        else:
+            if quant and "distil" in model: 
+                if quant == "4bit": 
+                    self.name += "-4-bit" 
+                else:
+                    self.name += "-8-bit"
 
-        hf_hub_download(repo_id=repo_id, filename=filename1, local_dir=local_dir)
-        hf_hub_download(repo_id=repo_id, filename=filename2, local_dir=local_dir)
+            if "distil" in model:
+                filename1 = f"./mlx_models/{self.name}/weights.npz"
+                filename2 = f"./mlx_models/{self.name}/config.json"
+                local_dir = "./"
+            else:
+                filename1 = "weights.npz"
+                filename2 = "config.json"
+                local_dir = f"./mlx_models/{self.name}"     
+            hf_hub_download(repo_id=repo_id, filename=filename1, local_dir=local_dir)   
+            hf_hub_download(repo_id=repo_id, filename=filename2, local_dir=local_dir)
     
     def transcribe(self, audio_path, language=None, **kwargs):
         result = transcribe_audio(audio_path, path_or_hf_repo=f'./mlx_models/{self.name}', language=language, batch_size=self.batch_size, **kwargs,)
